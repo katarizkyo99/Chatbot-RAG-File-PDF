@@ -1,208 +1,488 @@
 # Chatbot RAG - Football Player Stats
 
-A small Retrieval-Augmented Generation (RAG) chatbot that answers football/player-statistics questions using PDF documents as the knowledge source. This project is a minimal Flask web application that:
+A lightweight **Retrieval-Augmented Generation (RAG)** chatbot that answers football and player-statistics questions using PDF documents as its knowledge source.
 
-- Loads PDFs from the repository DB/ folder.
-- Splits document text into chunks, computes embeddings, and indexes them in a FAISS vector store.
-- Uses Groq's ChatGroq (Llama3-8b-8192 as configured) as the LLM via the langchain_groq integration and answers queries using RetrievalQA.
+This project demonstrates a simple end-to-end RAG pipeline:
 
-This repository is a functional prototype demonstrating a local RAG pipeline (PDF -> embeddings -> FAISS -> LLM) with a tiny web UI.
+```text
+PDF Documents
+     │
+     ▼
+Document Loading
+     │
+     ▼
+Text Chunking
+     │
+     ▼
+Embeddings
+     │
+     ▼
+FAISS Vector Store
+     │
+     ▼
+Retriever
+     │
+     ▼
+Groq LLM
+     │
+     ▼
+Generated Answer
+```
+
+The application is implemented as a minimal **Flask web application** with a browser-based chat interface.
+
+---
 
 ## Features
 
-- Load multiple PDF files from DB/ and create a retrieval index.
-- Use Hugging Face sentence-transformers (all-MiniLM-L6-v2) for embeddings.
-- Use FAISS in-memory vector store for nearest-neighbor search.
-- Query an LLM (ChatGroq) via a RetrievalQA chain.
-- Minimal browser UI to chat with the system.
+* Load multiple PDF documents from the `DB/` directory.
+* Split PDF content into smaller text chunks for retrieval.
+* Generate document embeddings using Hugging Face Sentence Transformers.
+* Store embeddings in an in-memory **FAISS** vector index.
+* Retrieve relevant document chunks using semantic similarity.
+* Generate responses using **Groq ChatGroq**.
+* Provide a simple browser-based chat interface.
+* Expose a lightweight REST endpoint for chatbot queries.
+
+---
 
 ## System Architecture
 
-Components and their roles:
-- Frontend: templates/chat.html — a small HTML/JS page that posts user messages to the backend.
-- Backend: main.py (Flask) — loads PDFs, builds embeddings and FAISS index, exposes chat API endpoints, and calls the LLM via langchain.
-- Document store: local PDF files in DB/ — the corpus used for retrieval.
-- Vector store: FAISS — in-memory index built at app start.
-- Embeddings: HuggingFaceEmbeddings with sentence-transformers/all-MiniLM-L6-v2.
-- LLM: Groq ChatGroq (configured with model_name="Llama3-8b-8192") — requires GROQ_API_KEY.
+The system consists of the following components:
 
-Flow:
-1. App starts and loads PDFs from DB/.
-2. Documents are split into chunks and embeddings are computed.
-3. FAISS index is constructed and used as a retriever.
-4. User message → POST /chat → RetrievalQA uses retriever + ChatGroq to produce an answer → response returned to client.
+| Component       | Technology         | Description                                                           |
+| --------------- | ------------------ | --------------------------------------------------------------------- |
+| Frontend        | HTML + JavaScript  | Provides the browser-based chat interface                             |
+| Backend         | Flask              | Handles requests, document processing, retrieval, and LLM interaction |
+| Document Source | PDF                | Provides the knowledge base                                           |
+| Embedding Model | `all-MiniLM-L6-v2` | Converts document chunks into vector representations                  |
+| Vector Store    | FAISS              | Performs similarity-based document retrieval                          |
+| LLM             | Groq ChatGroq      | Generates answers using retrieved context                             |
+| RAG Framework   | LangChain          | Orchestrates document loading, retrieval, and generation              |
+
+### RAG Workflow
+
+When the application starts:
+
+1. PDF documents are loaded from the `DB/` directory.
+2. Document content is split into smaller chunks.
+3. Each chunk is converted into an embedding.
+4. The embeddings are stored in an in-memory FAISS index.
+5. The FAISS index is used as the retriever for incoming questions.
+6. A user submits a question through the web interface.
+7. The relevant document chunks are retrieved.
+8. The retrieved context is passed to the Groq LLM.
+9. The generated response is returned to the browser.
+
+---
 
 ## Tech Stack
 
-- Frontend
-  - Plain HTML + JavaScript (templates/chat.html)
-- Backend
-  - Python (Flask)
-  - python-dotenv
-- AI / LLM
-  - langchain_groq (ChatGroq)
-  - LLM model configured in code: "Llama3-8b-8192"
-  - langchain RetrievalQA and prompt templates
-- Embeddings
-  - HuggingFaceEmbeddings (sentence-transformers/all-MiniLM-L6-v2)
-- Vector Store
-  - FAISS (faiss-cpu)
-- Document loaders
-  - PyPDFDirectoryLoader (langchain_community)
-- Tools / Libraries
-  - langchain, langchain_core, langchain_community, sentence-transformers, transformers, huggingface-hub, dotenv, Flask
+### Frontend
+
+* HTML
+* JavaScript
+
+### Backend
+
+* Python
+* Flask
+* python-dotenv
+
+### AI / LLM
+
+* LangChain
+* LangChain Groq
+* ChatGroq
+* Llama3-8b-8192
+
+### Embeddings
+
+* Hugging Face Sentence Transformers
+* `sentence-transformers/all-MiniLM-L6-v2`
+
+### Vector Database
+
+* FAISS (`faiss-cpu`)
+
+### Document Processing
+
+* PyPDFDirectoryLoader
+* LangChain Community
+
+---
 
 ## Project Structure
 
-project root
-├── DB/                           # PDF(s) used as knowledge base
+```text
+Chatbot-RAG-File-PDF/
+│
+├── DB/
 │   └── DB_Football Player Stats.pdf
+│
 ├── templates/
-│   └── chat.html                 # Minimal web UI
-├── .env                          # Environment variables (GROQ_API_KEY)
-├── main.py                       # Flask app and RAG pipeline (entry point)
-├── README.md                     # This file (recommended to replace existing)
-└── .gitignore
+│   └── chat.html
+│
+├── .env
+├── .gitignore
+├── main.py
+└── README.md
+```
 
-Important files:
-- main.py — application entry point. Responsible for loading PDFs, splitting, embedding, creating vectorstore, initializing ChatGroq, and running Flask routes.
-- templates/chat.html — simple client UI.
-- .env — must contain GROQ_API_KEY.
+### Important Files
+
+**`main.py`**
+
+The main application entry point. It is responsible for:
+
+* Loading PDF documents
+* Splitting documents into chunks
+* Creating embeddings
+* Building the FAISS vector store
+* Initializing the Groq LLM
+* Configuring the RetrievalQA pipeline
+* Running the Flask web server
+* Handling chatbot requests
+
+**`templates/chat.html`**
+
+Provides the web-based user interface for interacting with the chatbot.
+
+**`DB/`**
+
+Contains the PDF documents used as the chatbot's knowledge base.
+
+**`.env`**
+
+Stores environment variables such as the Groq API key.
+
+---
 
 ## Requirements
 
-The repository uses these Python packages (as implied by imports in main.py). Install the matching package names below — exact version pins are not included in the repo.
+### Prerequisites
 
-Minimum prerequisites:
-- Python (recommended 3.8+)
-- pip
+* Python 3.8 or later
+* pip
+* Internet connection for downloading the embedding model and communicating with the Groq API
 
-Python packages (install with pip):
-- flask
-- python-dotenv
-- langchain
-- langchain-groq
-- langchain-core
-- langchain-community
-- sentence-transformers
-- transformers
-- huggingface-hub
-- faiss-cpu
-- (Optional) torch (may be required by sentence-transformers depending on environment)
+### Python Dependencies
 
-Environment variables:
-- GROQ_API_KEY — required. Set in .env or environment prior to running.
+Install the required packages with:
 
-Notes:
-- FAISS: if your environment does not support faiss-cpu, install faiss appropriate to your platform or use an alternative vectorstore.
-- Hugging Face models are downloaded at runtime by sentence-transformers if not present locally.
+```bash
+pip install flask python-dotenv langchain langchain-groq langchain-core langchain-community sentence-transformers transformers huggingface-hub faiss-cpu
+```
+
+Depending on the environment, `sentence-transformers` may also require additional dependencies such as PyTorch.
+
+---
 
 ## Installation
 
-1. Clone the repository:
-   git clone https://github.com/katarizkyo99/Chatbot-RAG-File-PDF.git
-   cd Chatbot-RAG-File-PDF
+### 1. Clone the Repository
 
-2. Create and activate virtual environment (recommended):
-   python -m venv .venv
-   source .venv/bin/activate   # Linux/macOS
-   .venv\Scripts\activate      # Windows (PowerShell or CMD)
+```bash
+git clone https://github.com/katarizkyo99/Chatbot-RAG-File-PDF.git
+cd Chatbot-RAG-File-PDF
+```
 
-3. Install dependencies:
-   pip install flask python-dotenv langchain langchain-groq langchain-core langchain-community sentence-transformers transformers huggingface-hub faiss-cpu
+### 2. Create a Virtual Environment
 
-(If faiss-cpu is not available for your platform, see FAISS installation instructions from the FAISS project and install the appropriate wheel.)
+Creating a virtual environment is recommended.
+
+#### Windows
+
+```powershell
+python -m venv .venv
+.venv\Scripts\activate
+```
+
+#### Linux / macOS
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+### 3. Install Dependencies
+
+```bash
+pip install flask python-dotenv langchain langchain-groq langchain-core langchain-community sentence-transformers transformers huggingface-hub faiss-cpu
+```
+
+---
 
 ## Configuration
 
-Create or edit .env in repository root with your GROQ API key:
+Create a `.env` file in the project root:
 
+```env
 GROQ_API_KEY=your_groq_api_key_here
+```
 
-Do NOT commit secrets to the repository.
+The application requires a valid **Groq API key** to access the configured LLM.
+
+> **Important:** Never commit a real API key, password, or other secret to the repository.
+
+---
 
 ## Running the Project
 
-Development (local):
-1. Ensure .env contains GROQ_API_KEY.
-2. Start the app:
-   python main.py
-3. Visit the URL printed by Flask (by default http://127.0.0.1:5000/) and open the chat UI.
+Start the Flask application with:
 
-Notes:
-- On startup the application loads documents in DB/, splits up to the first 20 documents (per current code), computes embeddings, and builds an in-memory FAISS index. This can take time depending on the PDFs and your environment.
-- The app currently runs with Flask debug=True in main.py.
+```bash
+python main.py
+```
 
-## API endpoints
-| Method | Endpoint | Description |
-| ------ | -------- | ----------- |
-| GET | / | Serve chat UI (templates/chat.html) |
-| POST | /chat | Accept JSON { "message": "<text>" } and return { "response": "<LLM answer>" } |
+Once the application starts, open:
 
-Example curl:
-curl -X POST http://127.0.0.1:5000/chat -H "Content-Type: application/json" -d '{"message":"Who is the top scorer?"}'
+```text
+http://127.0.0.1:5000/
+```
 
-## Example Conversation (format)
-Below is an example of the request/response format. The "response" shown is illustrative — actual answers are produced by the configured LLM using your PDF documents as context.
+The browser-based chatbot interface will then be available.
 
-Request (JSON):
+### Startup Process
+
+At startup, the application:
+
+1. Loads PDF documents from `DB/`.
+2. Processes the loaded documents.
+3. Splits the documents into chunks.
+4. Generates embeddings.
+5. Builds an in-memory FAISS index.
+6. Initializes the Groq LLM.
+7. Starts the Flask server.
+
+The initial indexing process may take some time depending on the size and number of PDF documents.
+
+---
+
+## API Documentation
+
+The application exposes the following endpoints:
+
+| Method | Endpoint | Description                                                  |
+| ------ | -------- | ------------------------------------------------------------ |
+| `GET`  | `/`      | Serves the chatbot web interface                             |
+| `POST` | `/chat`  | Processes a user question and returns the generated response |
+
+### `POST /chat`
+
+#### Request
+
+```json
 {
-  "message": "Who is the top scorer in the DB?"
+  "message": "Who is the top scorer?"
 }
+```
 
-Response (JSON example):
+#### Response
+
+```json
 {
-  "response": "Based on the provided documents, the top scorer is Player A with 24 goals in the season (source: DB_Football Player Stats.pdf)."
+  "response": "Based on the provided documents, ..."
 }
+```
 
-Note: The textual content of the response will vary depending on the indexed PDFs and the LLM output.
+The actual response depends on the information retrieved from the PDF documents and the generated output from the configured LLM.
+
+### Example Using cURL
+
+```bash
+curl -X POST http://127.0.0.1:5000/chat \
+-H "Content-Type: application/json" \
+-d "{\"message\":\"Who is the top scorer?\"}"
+```
+
+---
 
 ## Usage
 
-- Use the web UI at / to enter queries.
-- Backend returns a text response assembled by the RetrievalQA chain calling the configured LLM with retrieved document context.
+Open the chatbot interface:
 
-## Database / Data
+```text
+http://127.0.0.1:5000/
+```
 
-- Document source: the DB/ folder with PDF files (DB_Football Player Stats.pdf included).
-- Vector index: created at runtime using FAISS from document chunk embeddings.
-- The current code selects the first 20 loaded documents and splits them. There is no persistent index file — index is built in memory on each start.
+Enter a question related to the football statistics contained in the PDF knowledge base.
 
-## Docker / Deployment
+For example:
 
-- There is no Dockerfile or docker-compose shipped in this repository. If you want containerization, create a Dockerfile that installs the Python environment, system packages for FAISS, and copies the repository files. Be mindful of large downloads (LLM interactions or sentence-transformers models).
+```text
+Who is the top scorer?
+```
+
+The system retrieves relevant information from the indexed PDF documents and provides an answer generated by the configured Groq LLM.
+
+---
+
+## Knowledge Base
+
+The chatbot uses PDF files located in:
+
+```text
+DB/
+```
+
+The included knowledge source is:
+
+```text
+DB/DB_Football Player Stats.pdf
+```
+
+The PDF documents serve as the source of knowledge for the RAG pipeline.
+
+### Vector Index
+
+The FAISS index is generated dynamically when the application starts.
+
+The current implementation:
+
+* Builds the index in memory.
+* Does not persist the FAISS index to disk.
+* Rebuilds the index every time the application starts.
+* Processes the first 20 loaded documents according to the current implementation.
+
+---
+
+## RAG Pipeline
+
+The core Retrieval-Augmented Generation process can be summarized as:
+
+```text
+        PDF Documents
+              │
+              ▼
+       Document Loader
+              │
+              ▼
+       Text Splitter
+              │
+              ▼
+      Hugging Face Embeddings
+              │
+              ▼
+        FAISS Vector Store
+              │
+              ▼
+           Retriever
+              │
+              │ Relevant Context
+              ▼
+       RetrievalQA Chain
+              │
+              ▼
+         Groq ChatGroq
+              │
+              ▼
+        Generated Answer
+```
+
+This approach allows the LLM to generate responses using information retrieved from the project's PDF knowledge base rather than relying solely on the model's internal knowledge.
+
+---
 
 ## Troubleshooting
 
-- Missing GROQ API key: app will raise ValueError("API Key is missing. Set GROQ_API_KEY in the .env file.")
-- FAISS import or binary issues: install faiss-cpu matching your platform or use another vectorstore backend.
-- Large PDFs or many documents: initial indexing may be slow and memory intensive.
-- LLM or API quota errors: ensure GROQ_API_KEY is valid and you have capacity/quotas.
+### Missing Groq API Key
 
-## Security Notes
+If the API key is missing, the application may raise an error indicating that `GROQ_API_KEY` has not been configured.
 
-- Do not commit API keys or other secrets to the repository. Use .env (which is present in repo but should not contain a real key) or a secrets manager.
-- The project calls external model APIs; protect API keys and monitor usage.
-- The app runs in debug mode by default in main.py — do not run debug=True in a public production environment.
+Make sure `.env` contains:
+
+```env
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+### FAISS Installation Error
+
+If `faiss-cpu` cannot be installed or imported correctly, install a FAISS version compatible with your operating system and Python environment.
+
+### Slow Startup
+
+The application generates embeddings and creates the FAISS index when it starts. Large or numerous PDF files may increase startup time and memory usage.
+
+### Hugging Face Model Download
+
+The embedding model is downloaded automatically when it is not available locally. An internet connection may therefore be required during the first execution.
+
+### Groq API or Quota Error
+
+Check that:
+
+* The Groq API key is valid.
+* The API is accessible.
+* The configured model is available.
+* The account has sufficient API capacity or quota.
+
+---
+
+## Security
+
+Because the application uses an external LLM API, API credentials must be protected.
+
+### Recommended Practices
+
+* Never commit `.env` files containing real secrets.
+* Never expose the Groq API key in frontend code.
+* Use environment variables for sensitive configuration.
+* Avoid running Flask with `debug=True` in production.
+* Use proper secret-management solutions for deployment environments.
+
+---
+
+## Limitations
+
+The current implementation is a minimal RAG prototype and has several limitations:
+
+* The FAISS vector index is rebuilt every time the application starts.
+* No persistent vector database is implemented.
+* No authentication mechanism is provided.
+* API endpoints are not protected by authentication.
+* Dependency versions are not pinned.
+* Flask debug mode is enabled in the current implementation.
+* Large document collections may increase startup time and memory consumption.
+* The system depends on the availability of the Groq API.
+
+---
 
 ## Development
 
-- To extend:
-  - Add persistent storage for the FAISS index (persist index to disk).
-  - Add a requirements.txt or pyproject.toml for reproducible installs.
-  - Add logging, error handling, and configurable chunk sizes.
-  - Add endpoint authentication if exposing the API.
+Possible improvements for future development include:
 
-## Contributing
+* Persisting the FAISS index to disk.
+* Adding a `requirements.txt` or `pyproject.toml` with pinned versions.
+* Implementing configurable chunk size and overlap.
+* Improving error handling and logging.
+* Adding API authentication.
+* Adding conversation history.
+* Supporting additional document formats.
+* Adding automated tests.
+* Deploying the application using Docker.
 
-- Open issues or pull requests with clear descriptions.
-- Add tests for pipeline steps if expanding the project.
-- Please follow code style and include dependency pinning when adding features.
+---
+
+## Docker
+
+The current repository does not include a `Dockerfile` or `docker-compose.yml`.
+
+Containerization can be added in the future to simplify deployment and environment reproducibility.
+
+
+---
 
 ## License
 
-No license file detected in this repository. If you want a license, add a LICENSE file with the selected license.
+No license file is currently included in the repository.
+
+If this project is intended for public distribution, add an appropriate open-source license such as MIT, Apache 2.0, or another license suitable for the project.
+
+---
 
 ## Author
 
-Repository owner: katarizkyo99 — https://github.com/katarizkyo99
+**Rizky Octa Vianto**
+
+GitHub: [@katarizkyo99](https://github.com/katarizkyo99)
