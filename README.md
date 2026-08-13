@@ -4,9 +4,8 @@ Markdown
 
 Sebuah proyek Chatbot berbasis **Retrieval-Augmented Generation (RAG)** yang dirancang untuk menjawab pertanyaan dan memberikan informasi spesifik berdasarkan dokumen PDF data statistik pemain sepak bola.
 
----## 📂 Struktur Repositori
+Struktur Repositori
 
-Berikut adalah struktur direktori dari proyek ini:```text
 Chatbot RAG/
 │
 ├── .env                                  # File konfigurasi untuk environment variables (API Keys, dll.)
