@@ -6,13 +6,16 @@ Sebuah proyek Chatbot berbasis **Retrieval-Augmented Generation (RAG)** yang dir
 
 Cara Instalasi & Penggunaan
 1. Clone Repositori
+
 git clone https://github.com/katarizkyo99/Chatbot-RAG-File-PDF.git
 
 2. Konfigurasi Environment
+
 API_KEY=your_api_key_here
 
 3. Jalankan Aplikasi
 Eksekusi skrip utama backend untuk menyalakan server:
+
 python main.py
 
 5. Akses Chatbot
